@@ -94,7 +94,24 @@ export class ToolboxContents extends Component {
     protected async getEditorHtml(): Promise<string> {
         const pageEditorComponent = window.$components.first('page-editor') as PageEditor;
         const editor = pageEditorComponent.getEditorComponent() as (MarkdownEditor|WysiwygEditorTinymce|WysiwygEditor);
-        return (await editor.getContent()).html;
+        const content = await editor.getContent() as {html: string; markdown?: string};
+        if (content.html) {
+            return content.html;
+        }
+
+        const container = document.createElement('div');
+        for (const line of (content.markdown || '').split('\n')) {
+            const match = /^(#{1,6})\s+(.+)$/.exec(line);
+            if (!match) {
+                continue;
+            }
+
+            const heading = document.createElement(`h${match[1].length}`);
+            heading.textContent = match[2].replace(/\s+#+\s*$/, '');
+            container.appendChild(heading);
+        }
+
+        return container.innerHTML;
     }
 
     protected parseHeadersFromHtml(html: string): ToolboxContentHeader[] {

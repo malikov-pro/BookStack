@@ -166,8 +166,10 @@ class PageRepo
         if ($haveInput && $inputEmpty) {
             $pageContent->setNewHTML('', user());
         } elseif (!empty($input['markdown']) && is_string($input['markdown'])) {
-            $newEditor = PageEditorType::Markdown;
-            $pageContent->setNewMarkdown($input['markdown'], user());
+            $newEditor = ($inputEditor === PageEditorType::MarkdownYfm)
+                ? PageEditorType::MarkdownYfm
+                : PageEditorType::Markdown;
+            $pageContent->setNewMarkdown($input['markdown'], user(), $newEditor === PageEditorType::MarkdownYfm);
         } elseif (isset($input['html'])) {
             $newEditor = ($inputEditor->isHtmlBased() ? $inputEditor : null) ?? ($defaultEditor->isHtmlBased() ? $defaultEditor : null) ?? PageEditorType::WysiwygTinymce;
             $pageContent->setNewHTML($input['html'], user());
@@ -238,7 +240,8 @@ class PageRepo
         $content = new PageContent($page);
 
         if (!empty($revision->markdown)) {
-            $content->setNewMarkdown($revision->markdown, user());
+            $useYfm = PageEditorType::forPage($page) === PageEditorType::MarkdownYfm;
+            $content->setNewMarkdown($revision->markdown, user(), $useYfm);
         } else {
             $content->setNewHTML($revision->html, user());
         }

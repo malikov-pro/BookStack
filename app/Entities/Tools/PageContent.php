@@ -6,6 +6,7 @@ use BookStack\App\AppVersion;
 use BookStack\Entities\Models\Page;
 use BookStack\Entities\Queries\PageQueries;
 use BookStack\Entities\Tools\Markdown\MarkdownToHtml;
+use BookStack\Entities\Tools\Markdown\YfmMarkdownToHtml;
 use BookStack\Exceptions\ImageUploadException;
 use BookStack\Facades\Theme;
 use BookStack\Permissions\Permission;
@@ -55,11 +56,12 @@ class PageContent
     /**
      * Update the content of the page with new provided Markdown content.
      */
-    public function setNewMarkdown(string $markdown, User $updater): void
+    public function setNewMarkdown(string $markdown, User $updater, bool $useYfm = false): void
     {
         $markdown = $this->extractBase64ImagesFromMarkdown($markdown, $updater);
         $this->page->markdown = $markdown;
-        $html = (new MarkdownToHtml($markdown))->convert();
+        $converter = $useYfm ? new YfmMarkdownToHtml($markdown) : new MarkdownToHtml($markdown);
+        $html = $converter->convert();
         $html = $this->formatHtml($html);
 
         $themeResult = Theme::dispatch(ThemeEvents::PAGE_CONTENT_PRE_STORE, $html, $this->page);

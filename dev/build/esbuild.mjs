@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as esbuild from 'esbuild';
+import {nodeModulesPolyfillPlugin} from 'esbuild-plugins-node-modules-polyfill';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as process from "node:process";
@@ -17,6 +18,7 @@ const entryPoints = {
     code: path.join(__dirname, '../../resources/js/code/index.mjs'),
     'legacy-modes': path.join(__dirname, '../../resources/js/code/legacy-modes.mjs'),
     markdown: path.join(__dirname, '../../resources/js/markdown/index.mts'),
+    'markdown-yfm': path.join(__dirname, '../../resources/js/markdown-yfm/index.tsx'),
     wysiwyg: path.join(__dirname, '../../resources/js/wysiwyg/index.ts'),
 };
 
@@ -27,6 +29,15 @@ if (mode === 'watch') {
 
 // Locate our output directory
 const outdir = path.join(__dirname, '../../public/dist');
+fs.mkdirSync(outdir, {recursive: true});
+fs.copyFileSync(
+    path.join(__dirname, '../../node_modules/@diplodoc/transform/dist/css/yfm.css'),
+    path.join(outdir, 'yfm.css'),
+);
+fs.copyFileSync(
+    path.join(__dirname, '../../node_modules/@diplodoc/transform/dist/js/yfm.js'),
+    path.join(outdir, 'yfm.js'),
+);
 
 // Define the options for esbuild
 const options = {
@@ -36,13 +47,28 @@ const options = {
     outdir,
     sourcemap: true,
     target: 'es2021',
-    mainFields: ['module', 'main'],
+    platform: 'browser',
+    mainFields: ['browser', 'module', 'main'],
     format: 'esm',
     minify: isProd,
     logLevel: 'info',
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
+        'process.env.LANG': JSON.stringify('ru'),
+    },
+    plugins: [
+        nodeModulesPolyfillPlugin({
+            globals: {
+                process: true,
+                Buffer: true,
+            },
+        }),
+    ],
     loader: {
         '.html': 'copy',
+        '.jsx': 'jsx',
         '.svg': 'text',
+        '.tsx': 'tsx',
     },
     absWorkingDir: path.join(__dirname, '../..'),
     alias: {

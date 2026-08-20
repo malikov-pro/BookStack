@@ -240,10 +240,11 @@ export class PageEditor extends Component {
     }
 
     /**
-     * @return {MarkdownEditor|WysiwygEditor|WysiwygEditorTinymce}
+     * @return {MarkdownEditor|MarkdownYfmEditor|WysiwygEditor|WysiwygEditorTinymce}
      */
     getEditorComponent() {
-        return window.$components.first('markdown-editor')
+        return window.$components.first('markdown-yfm-editor')
+            || window.$components.first('markdown-editor')
             || window.$components.first('wysiwyg-editor')
             || window.$components.first('wysiwyg-editor-tinymce');
     }

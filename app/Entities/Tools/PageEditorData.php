@@ -113,7 +113,9 @@ class PageEditorData
 
         // Use the requested editor if valid and if we have permission
         $requestedType = PageEditorType::fromRequestValue($this->requestedEditor);
-        if ($requestedType && userCan(Permission::EditorChange)) {
+        $canUseRequestedType = $requestedType !== PageEditorType::MarkdownYfm
+            || $editorType->isMarkdownBased();
+        if ($requestedType && $canUseRequestedType && userCan(Permission::EditorChange)) {
             $editorType = $requestedType;
         }
 

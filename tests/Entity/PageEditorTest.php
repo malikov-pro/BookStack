@@ -21,7 +21,9 @@ class PageEditorTest extends TestCase
     {
         $this->assertEquals('wysiwyg', setting('app-editor'));
         $resp = $this->asAdmin()->get($this->page->book->getUrl('/create-page'));
-        $this->withHtml($this->followRedirects($resp))->assertElementExists('#html-editor');
+        $this->withHtml($this->followRedirects($resp))
+            ->assertElementExists('#html-editor')
+            ->assertElementNotExists('#markdown-yfm-editor');
     }
 
     public function test_editor_set_for_new_pages()
@@ -58,6 +60,19 @@ class PageEditorTest extends TestCase
 
         $resp = $this->asAdmin()->get($this->page->getUrl('/edit'));
         $this->withHtml($resp)->assertElementContains('[name="markdown"]', $mdContent);
+    }
+
+    public function test_markdown_yfm_page_shows_new_markdown_editor()
+    {
+        $this->page->editor = PageEditorType::MarkdownYfm;
+        $this->page->markdown = '# YFM content';
+        $this->page->save();
+
+        $resp = $this->asAdmin()->get($this->page->getUrl('/edit'));
+
+        $this->withHtml($resp)
+            ->assertElementExists('#markdown-yfm-editor')
+            ->assertElementNotExists('#markdown-editor');
     }
 
     public function test_html_content_given_to_editor_if_no_markdown()
@@ -193,11 +208,71 @@ class PageEditorTest extends TestCase
         $editLink = $this->page->getUrl('/edit') . '?editor=';
         $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}markdown-clean\"]", '(Clean Content)');
         $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}markdown-stable\"]", '(Stable Content)');
+        $this->withHtml($resp)->assertElementNotExists("a[href=\"{$editLink}markdown2026\"]");
         $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}wysiwyg2024\"]", '(In Beta Testing)');
 
         $resp = $this->asAdmin()->get($this->page->getUrl('/edit?editor=markdown-stable'));
         $editLink = $this->page->getUrl('/edit') . '?editor=';
         $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}wysiwyg\"]", 'Switch to WYSIWYG Editor');
+        $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}markdown2026\"]", 'Switch to new Markdown');
+    }
+
+    public function test_markdown_yfm_switch_option_requires_change_editor_permission()
+    {
+        $this->page->editor = PageEditorType::Markdown;
+        $this->page->markdown = '# Markdown content';
+        $this->page->save();
+        $editLink = $this->page->getUrl('/edit') . '?editor=markdown2026';
+
+        $resp = $this->asEditor()->get($this->page->getUrl('/edit'));
+        $this->withHtml($resp)->assertElementNotExists("a[href=\"{$editLink}\"]");
+
+        $resp = $this->asAdmin()->get($this->page->getUrl('/edit'));
+        $this->withHtml($resp)->assertElementContains("a[href=\"{$editLink}\"]", 'Switch to new Markdown');
+    }
+
+    public function test_html_editors_do_not_show_markdown_yfm_switch_option()
+    {
+        $editLink = $this->page->getUrl('/edit') . '?editor=markdown2026';
+
+        $this->page->editor = PageEditorType::WysiwygTinymce;
+        $this->page->save();
+        $resp = $this->asAdmin()->get($this->page->getUrl('/edit'));
+        $this->withHtml($resp)->assertElementNotExists("a[href=\"{$editLink}\"]");
+
+        $this->page->editor = PageEditorType::WysiwygLexical;
+        $this->page->save();
+        $resp = $this->get($this->page->getUrl('/edit'));
+        $this->withHtml($resp)->assertElementNotExists("a[href=\"{$editLink}\"]");
+    }
+
+    public function test_html_editor_cannot_be_switched_to_markdown_yfm_by_request()
+    {
+        $this->page->editor = PageEditorType::WysiwygTinymce;
+        $this->page->save();
+
+        $resp = $this->asAdmin()->get($this->page->getUrl('/edit?editor=markdown2026'));
+
+        $this->withHtml($resp)
+            ->assertElementExists('[component="wysiwyg-editor-tinymce"]')
+            ->assertElementNotExists('#markdown-yfm-editor');
+    }
+
+    public function test_markdown_yfm_switch_options_show_old_markdown_and_wysiwyg_editors()
+    {
+        $this->page->editor = PageEditorType::MarkdownYfm;
+        $this->page->markdown = '# YFM content';
+        $this->page->save();
+        $editLink = $this->page->getUrl('/edit') . '?editor=';
+
+        $resp = $this->asAdmin()->get($this->page->getUrl('/edit'));
+        $html = $this->withHtml($resp);
+
+        $html->assertElementNotExists("a[href=\"{$editLink}markdown-clean\"]");
+        $html->assertElementContains("a[href=\"{$editLink}markdown-stable\"]", 'Switch to Markdown Editor');
+        $html->assertElementNotExists("a[href=\"{$editLink}markdown2026\"]");
+        $html->assertElementExists("a[href=\"{$editLink}wysiwyg\"]");
+        $html->assertElementExists("a[href=\"{$editLink}wysiwyg2024\"]");
     }
 
     public function test_editor_type_switch_options_dont_show_if_without_change_editor_permissions()
@@ -228,6 +303,22 @@ class PageEditorTest extends TestCase
 
         $this->asEditor()->put($page->getUrl(), ['name' => $page->name, 'markdown' => '## Updated content abc']);
         $this->assertEquals('wysiwyg', $page->refresh()->editor);
+    }
+
+    public function test_markdown_yfm_save_keeps_editor_type()
+    {
+        $this->page->editor = PageEditorType::MarkdownYfm;
+        $this->page->markdown = '# Old content';
+        $this->page->save();
+
+        $this->asAdmin()->put($this->page->getUrl(), [
+            'name' => $this->page->name,
+            'editor' => PageEditorType::MarkdownYfm->value,
+            'markdown' => '# Updated YFM content',
+        ])->assertRedirect();
+
+        $this->assertEquals(PageEditorType::MarkdownYfm->value, $this->page->refresh()->editor);
+        $this->assertEquals('# Updated YFM content', $this->page->markdown);
     }
 
     public function test_editor_type_change_to_wysiwyg_infers_type_from_request_or_uses_system_default()

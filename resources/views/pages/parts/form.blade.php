@@ -48,6 +48,11 @@
                         @include('pages.parts.markdown-editor', ['model' => $model])
                     @endif
 
+                    {{--New Markdown Editor (YFM)--}}
+                    @if($editor === \BookStack\Entities\Tools\PageEditorType::MarkdownYfm)
+                        @include('pages.parts.markdown-yfm-editor', ['model' => $model])
+                    @endif
+
                 </div>
 
             </div>

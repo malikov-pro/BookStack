@@ -251,6 +251,8 @@ return [
     'pages_edit_switch_to_markdown' => 'Switch to Markdown Editor',
     'pages_edit_switch_to_markdown_clean' => '(Clean Content)',
     'pages_edit_switch_to_markdown_stable' => '(Stable Content)',
+    'pages_edit_switch_to_new_markdown' => 'Switch to new Markdown',
+    'pages_edit_switch_to_new_markdown_desc' => '(YFM Editor)',
     'pages_edit_switch_to_wysiwyg' => 'Switch to WYSIWYG Editor',
     'pages_edit_switch_to_new_wysiwyg' => 'Switch to new WYSIWYG',
     'pages_edit_switch_to_new_wysiwyg_desc' => '(In Beta Testing)',

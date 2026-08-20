@@ -251,6 +251,8 @@ return [
     'pages_edit_switch_to_markdown' => 'Переключиться на Markdown',
     'pages_edit_switch_to_markdown_clean' => 'Только Markdown (с возможными потерями форматирования)',
     'pages_edit_switch_to_markdown_stable' => 'Полное сохранение форматирования (HTML)',
+    'pages_edit_switch_to_new_markdown' => 'Переключиться на новый Markdown',
+    'pages_edit_switch_to_new_markdown_desc' => '(редактор YFM)',
     'pages_edit_switch_to_wysiwyg' => 'Переключиться в WYSIWYG',
     'pages_edit_switch_to_new_wysiwyg' => 'Переключиться на новый WYSIWYG',
     'pages_edit_switch_to_new_wysiwyg_desc' => '(В бета-тестировании)',

@@ -33,6 +33,7 @@
                         <option @if(setting('app-editor') === 'wysiwyg') selected @endif value="wysiwyg">WYSIWYG</option>
                         <option @if(setting('app-editor') === 'markdown') selected @endif value="markdown">Markdown</option>
                         <option @if(setting('app-editor') === 'wysiwyg2024') selected @endif value="wysiwyg2024">New WYSIWYG (beta testing)</option>
+                        <option @if(setting('app-editor') === 'markdown2026') selected @endif value="markdown2026">New Markdown (YFM)</option>
                     </select>
                 </div>
             </div>

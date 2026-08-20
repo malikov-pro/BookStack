@@ -4,6 +4,15 @@
     <meta property="og:description" content="{{ Str::limit($page->text, 100, '...') }}">
 @endpush
 
+@if($page->editor === 'markdown2026')
+    @push('head')
+        <link rel="stylesheet" href="{{ versioned_asset('dist/yfm.css') }}">
+    @endpush
+    @push('body-end')
+        <script src="{{ versioned_asset('dist/yfm.js') }}" defer @if($cspNonce ?? false) nonce="{{ $cspNonce }}" @endif></script>
+    @endpush
+@endif
+
 @include('entities.body-tag-classes', ['entity' => $page])
 
 @section('body')
@@ -19,7 +28,7 @@
     <main class="content-wrap card">
         <div component="page-display"
              option:page-display:page-id="{{ $page->id }}"
-             class="page-content clearfix">
+             class="page-content clearfix{{ $page->editor === 'markdown2026' ? ' page-content-yfm yfm' : '' }}">
             @include('pages.parts.page-display')
         </div>
         @include('pages.parts.pointer', ['page' => $page, 'commentTree' => $commentTree])

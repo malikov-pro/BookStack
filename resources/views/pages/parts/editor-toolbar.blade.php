@@ -55,7 +55,7 @@
                         <hr>
                     </li>
                     <li>
-                        @if($editor !== \BookStack\Entities\Tools\PageEditorType::Markdown)
+                        @if($editor->isHtmlBased())
                             <a href="{{ $model->getUrl($isDraft ? '' : '/edit') }}?editor=markdown-clean" refs="page-editor@changeEditor" role="menuitem" class="icon-item">
                                 @icon('swap-horizontal')
                                 <div>
@@ -64,6 +64,24 @@
                                     <small>{{ trans('entities.pages_edit_switch_to_markdown_clean') }}</small>
                                 </div>
                             </a>
+                            <a href="{{ $model->getUrl($isDraft ? '' : '/edit') }}?editor=markdown-stable" refs="page-editor@changeEditor" role="menuitem" class="icon-item">
+                                @icon('swap-horizontal')
+                                <div>
+                                    {{ trans('entities.pages_edit_switch_to_markdown') }}
+                                    <br>
+                                    <small>{{ trans('entities.pages_edit_switch_to_markdown_stable') }}</small>
+                                </div>
+                            </a>
+                        @elseif($editor === \BookStack\Entities\Tools\PageEditorType::Markdown)
+                            <a href="{{ $model->getUrl($isDraft ? '' : '/edit') }}?editor=markdown2026" refs="page-editor@changeEditor" role="menuitem" class="icon-item">
+                                @icon('swap-horizontal')
+                                <div>
+                                    {{ trans('entities.pages_edit_switch_to_new_markdown') }}
+                                    <br>
+                                    <small>{{ trans('entities.pages_edit_switch_to_new_markdown_desc') }}</small>
+                                </div>
+                            </a>
+                        @elseif($editor === \BookStack\Entities\Tools\PageEditorType::MarkdownYfm)
                             <a href="{{ $model->getUrl($isDraft ? '' : '/edit') }}?editor=markdown-stable" refs="page-editor@changeEditor" role="menuitem" class="icon-item">
                                 @icon('swap-horizontal')
                                 <div>
